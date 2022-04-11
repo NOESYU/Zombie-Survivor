@@ -31,6 +31,6 @@ public class PlayerInput : MonoBehaviour
         move = Input.GetAxis(moveAxisName); 
         rotate = Input.GetAxis(rotateAxisName);
         fire = Input.GetButton(fireButtonName);
-        reload = Input.GetButton(reloadButtonName);
+        reload = Input.GetButtonDown(reloadButtonName);
     }
 }
