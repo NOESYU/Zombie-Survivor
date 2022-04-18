@@ -36,16 +36,31 @@ public class Gun : MonoBehaviour
     private void Awake()
     {
         // 사용할 컴포넌트 불러오기
+        bulletLineRenderer = GetComponent<LineRenderer>();
+        gunAudioPlayer = GetComponent<AudioSource>();
+
+        // 라인렌더러에서 사용할 점 개수(position size) 설정
+        bulletLineRenderer.positionCount = 2;
+        // 라인렌더러 비활성화
+        bulletLineRenderer.enabled = false;
     }
 
     private void OnEnable()
     {
-        // 총 상태 초기화
+        // 전체 예비 탄알 양을 초기화 - 스크립터블 오브젝트
+        ammoRemain = gunData.startAmmoRemain;
+        // 현재 탄창을 가득 채우기
+        magAmmo = gunData.magCapacity;
+
+        // 총의 현재상태를 총을 쏠 준비가 된 상태로 변경
+        state = State.Ready;
+        // 마지막으로 총 쏜 시점 초기화
+        lastFireTime = 0;
     }
 
     public void Fire()
     {
-        // 발사 시도
+        
     }
 
     private void Shot()
@@ -56,10 +71,24 @@ public class Gun : MonoBehaviour
     // 발사 이펙트와 소리를 재생하고 탄알 궤적을 그림
     private IEnumerator ShotEffect(Vector3 hitPosition)
     {
-        bulletLineRenderer.enabled = true; // 라인렌더러 활성화하여 탄알 궤적 그림
+        // 총구 화염, 탄피 배출 효과 재생
+        muzzleFlashEffect.Play();
+        shellEjectEffect.Play();
+
+        // 총격 소리 재생
+        gunAudioPlayer.PlayOneShot(gunData.shotClip);
+
+        // 선 시작점-총구 위치, 선 끝점-충돌위치
+        bulletLineRenderer.SetPosition(0, fireTransform.position);
+        bulletLineRenderer.SetPosition(1, hitPosition);
+        // 라인렌더러를 활성화 하여 탄알 궤적그림
+        bulletLineRenderer.enabled = true;
+
+        // 대기처리 - 코루틴
         yield return new WaitForSeconds(0.03f);
 
-        bulletLineRenderer.enabled = false; // 탄알 궤적 비활성화
+        // 라인렌더러 비활성화
+        bulletLineRenderer.enabled = false;
     }
 
     public bool Reload()
