@@ -60,12 +60,55 @@ public class Gun : MonoBehaviour
 
     public void Fire()
     {
-        
+        // 현재상태가 발사 가능한 상태
+        // && 마지막 발사 시점에서 timeBetFire 이상의 시간이 지났음
+        if (state == State.Ready && Time.time >= lastFireTime + gunData.timeBetFire)
+        {
+            // 마지막 발사 시점 갱신
+            lastFireTime = Time.time;
+            // 실제 발사 처리 실행
+            Shot();
+        }
     }
 
     private void Shot()
     {
-        // 실제 발사 처리
+        // 레이캐스트에 의한 충돌 정보 저장
+        RaycastHit hit;
+        // 탄알이 맞은 곳을 저장
+        Vector3 hitPosition = Vector3.zero;
+
+        // 레이캐스트 - 시작지점, 방향, 충돌 정보 컨테이너, 사정거리
+        // 레이와 상대방이 충돌한 경우
+        if(Physics.Raycast(fireTransform.position, fireTransform.forward, out hit, fireDistance))
+        {
+            // 충돌한 상대방으로부터 IDamageable 오브젝트 가져오기
+            IDamageable target = hit.collider.GetComponent<IDamageable>();
+
+            if (target != null)
+            {
+                // IDamageable을 가져왔다면 상대방의 OnDamage 함수를 실행시켜 상대방에게 데미지 주기
+                target.OnDamage(gunData.damage, hit.point, hit.normal);
+            }
+
+            // 레이가 충돌한 위치 저장
+            hitPosition = hit.point;
+        }   
+        // 충돌하지 않은 경우
+        else
+        {
+            // 탄알이 최대 사정거리까지 날아갔을 때의 위치를 충돌 위치로 사용
+            hitPosition = fireTransform.position + fireTransform.forward * fireDistance;
+        }
+
+        // 발사 이펙트 재생 시작
+        StartCoroutine(ShotEffect(hitPosition));
+
+        magAmmo--; // 탄알 수 -1
+        if (magAmmo <= 0)
+        {
+            state = State.Empty; // 탄알 수가 없으면 총의 상태 empty로 갱신
+        }
     }
 
     // 발사 이펙트와 소리를 재생하고 탄알 궤적을 그림
