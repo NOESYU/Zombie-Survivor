@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
-    // ÃÑ »óÅÂ Ç¥ÇöÇÏ´Âµ¥ »ç¿ëÇÒ Å¸ÀÔ ¼±¾ğ
+    // ì´ ìƒíƒœ í‘œí˜„í•˜ëŠ”ë° ì‚¬ìš©í•  íƒ€ì… ì„ ì–¸
     public enum State
     {
         Ready,
@@ -14,123 +14,123 @@ public class Gun : MonoBehaviour
 
     public State state { get; private set; }
 
-    public Transform fireTransform; // Åº¾ËÀÌ ¹ß»çµÉ À§Ä¡
+    public Transform fireTransform; // íƒ„ì•Œì´ ë°œì‚¬ë  ìœ„ì¹˜x
 
-    // ÃÑ±¸ È­¿°, ÅºÇÇ ¹èÃâ È¿°ú ÆÄÆ¼Å¬ ½Ã½ºÅÛ
+    // ì´êµ¬ í™”ì—¼, íƒ„í”¼ ë°°ì¶œ íš¨ê³¼ íŒŒí‹°í´ ì‹œìŠ¤í…œ
     public ParticleSystem muzzleFlashEffect;
     public ParticleSystem shellEjectEffect;
 
-    private LineRenderer bulletLineRenderer;  // Åº¾Ë ±ËÀûÀ» ±×¸®±âÀ§ÇÑ ·»´õ·¯
+    private LineRenderer bulletLineRenderer;  // íƒ„ì•Œ ê¶¤ì ì„ ê·¸ë¦¬ê¸°ìœ„í•œ ë Œë”ëŸ¬
 
     private AudioSource gunAudioPlayer;
 
-    public GunData gunData; // ÃÑÀÇ ÇöÀç µ¥ÀÌÅÍ
+    public GunData gunData; // ì´ì˜ í˜„ì¬ ë°ì´í„°
 
-    private float fireDistance = 50f; // »çÁ¤°Å¸®
+    private float fireDistance = 50f; // ì‚¬ì •ê±°ë¦¬
 
-    public int ammoRemain = 100; // ³²Àº ÀüÃ¼ Åº¾Ë
-    public int magAmmo; // ÇöÀç ÅºÃ¢¿¡ ³²¾Æ ÀÖ´Â Åº¾Ë
+    public int ammoRemain = 100; // ë‚¨ì€ ì „ì²´ íƒ„ì•Œ
+    public int magAmmo; // í˜„ì¬ íƒ„ì°½ì— ë‚¨ì•„ ìˆëŠ” íƒ„ì•Œ
 
-    private float lastFireTime; //ÃÑÀ» ¸¶Áö¸·À¸·Î ¹ß»çÇÑ ½ÃÁ¡
+    private float lastFireTime; //ì´ì„ ë§ˆì§€ë§‰ìœ¼ë¡œ ë°œì‚¬í•œ ì‹œì 
 
     private void Awake()
     {
-        // »ç¿ëÇÒ ÄÄÆ÷³ÍÆ® ºÒ·¯¿À±â
+        // ì‚¬ìš©í•  ì»´í¬ë„ŒíŠ¸ ë¶ˆëŸ¬ì˜¤ê¸°
         bulletLineRenderer = GetComponent<LineRenderer>();
         gunAudioPlayer = GetComponent<AudioSource>();
 
-        // ¶óÀÎ·»´õ·¯¿¡¼­ »ç¿ëÇÒ Á¡ °³¼ö(position size) ¼³Á¤
+        // ë¼ì¸ë Œë”ëŸ¬ì—ì„œ ì‚¬ìš©í•  ì  ê°œìˆ˜(position size) ì„¤ì •
         bulletLineRenderer.positionCount = 2;
-        // ¶óÀÎ·»´õ·¯ ºñÈ°¼ºÈ­
+        // ë¼ì¸ë Œë”ëŸ¬ ë¹„í™œì„±í™”
         bulletLineRenderer.enabled = false;
     }
 
     private void OnEnable()
     {
-        // ÀüÃ¼ ¿¹ºñ Åº¾Ë ¾çÀ» ÃÊ±âÈ­ - ½ºÅ©¸³ÅÍºí ¿ÀºêÁ§Æ®
+        // ì „ì²´ ì˜ˆë¹„ íƒ„ì•Œ ì–‘ì„ ì´ˆê¸°í™” - ìŠ¤í¬ë¦½í„°ë¸” ì˜¤ë¸Œì íŠ¸
         ammoRemain = gunData.startAmmoRemain;
-        // ÇöÀç ÅºÃ¢À» °¡µæ Ã¤¿ì±â
+        // í˜„ì¬ íƒ„ì°½ì„ ê°€ë“ ì±„ìš°ê¸°
         magAmmo = gunData.magCapacity;
 
-        // ÃÑÀÇ ÇöÀç»óÅÂ¸¦ ÃÑÀ» ½ò ÁØºñ°¡ µÈ »óÅÂ·Î º¯°æ
+        // ì´ì˜ í˜„ì¬ìƒíƒœë¥¼ ì´ì„ ì  ì¤€ë¹„ê°€ ëœ ìƒíƒœë¡œ ë³€ê²½
         state = State.Ready;
-        // ¸¶Áö¸·À¸·Î ÃÑ ½ğ ½ÃÁ¡ ÃÊ±âÈ­
+        // ë§ˆì§€ë§‰ìœ¼ë¡œ ì´ ìœ ì‹œì  ì´ˆê¸°í™”
         lastFireTime = 0;
     }
 
     public void Fire()
     {
-        // ÇöÀç»óÅÂ°¡ ¹ß»ç °¡´ÉÇÑ »óÅÂ
-        // && ¸¶Áö¸· ¹ß»ç ½ÃÁ¡¿¡¼­ timeBetFire ÀÌ»óÀÇ ½Ã°£ÀÌ Áö³µÀ½
+        // í˜„ì¬ìƒíƒœê°€ ë°œì‚¬ ê°€ëŠ¥í•œ ìƒíƒœ
+        // && ë§ˆì§€ë§‰ ë°œì‚¬ ì‹œì ì—ì„œ timeBetFire ì´ìƒì˜ ì‹œê°„ì´ ì§€ë‚¬ìŒ
         if (state == State.Ready && Time.time >= lastFireTime + gunData.timeBetFire)
         {
-            // ¸¶Áö¸· ¹ß»ç ½ÃÁ¡ °»½Å
+            // ë§ˆì§€ë§‰ ë°œì‚¬ ì‹œì  ê°±ì‹ 
             lastFireTime = Time.time;
-            // ½ÇÁ¦ ¹ß»ç Ã³¸® ½ÇÇà
+            // ì‹¤ì œ ë°œì‚¬ ì²˜ë¦¬ ì‹¤í–‰
             Shot();
         }
     }
 
     private void Shot()
     {
-        // ·¹ÀÌÄ³½ºÆ®¿¡ ÀÇÇÑ Ãæµ¹ Á¤º¸ ÀúÀå
+        // ë ˆì´ìºìŠ¤íŠ¸ì— ì˜í•œ ì¶©ëŒ ì •ë³´ ì €ì¥
         RaycastHit hit;
-        // Åº¾ËÀÌ ¸ÂÀº °÷À» ÀúÀå
+        // íƒ„ì•Œì´ ë§ì€ ê³³ì„ ì €ì¥
         Vector3 hitPosition = Vector3.zero;
 
-        // ·¹ÀÌÄ³½ºÆ® - ½ÃÀÛÁöÁ¡, ¹æÇâ, Ãæµ¹ Á¤º¸ ÄÁÅ×ÀÌ³Ê, »çÁ¤°Å¸®
-        // ·¹ÀÌ¿Í »ó´ë¹æÀÌ Ãæµ¹ÇÑ °æ¿ì
+        // ë ˆì´ìºìŠ¤íŠ¸ - ì‹œì‘ì§€ì , ë°©í–¥, ì¶©ëŒ ì •ë³´ ì»¨í…Œì´ë„ˆ, ì‚¬ì •ê±°ë¦¬
+        // ë ˆì´ì™€ ìƒëŒ€ë°©ì´ ì¶©ëŒí•œ ê²½ìš°
         if(Physics.Raycast(fireTransform.position, fireTransform.forward, out hit, fireDistance))
         {
-            // Ãæµ¹ÇÑ »ó´ë¹æÀ¸·ÎºÎÅÍ IDamageable ¿ÀºêÁ§Æ® °¡Á®¿À±â
+            // ì¶©ëŒí•œ ìƒëŒ€ë°©ìœ¼ë¡œë¶€í„° IDamageable ì˜¤ë¸Œì íŠ¸ ê°€ì ¸ì˜¤ê¸°
             IDamageable target = hit.collider.GetComponent<IDamageable>();
 
             if (target != null)
             {
-                // IDamageableÀ» °¡Á®¿Ô´Ù¸é »ó´ë¹æÀÇ OnDamage ÇÔ¼ö¸¦ ½ÇÇà½ÃÄÑ »ó´ë¹æ¿¡°Ô µ¥¹ÌÁö ÁÖ±â
+                // IDamageableì„ ê°€ì ¸ì™”ë‹¤ë©´ ìƒëŒ€ë°©ì˜ OnDamage í•¨ìˆ˜ë¥¼ ì‹¤í–‰ì‹œì¼œ ìƒëŒ€ë°©ì—ê²Œ ë°ë¯¸ì§€ ì£¼ê¸°
                 target.OnDamage(gunData.damage, hit.point, hit.normal);
             }
 
-            // ·¹ÀÌ°¡ Ãæµ¹ÇÑ À§Ä¡ ÀúÀå
+            // ë ˆì´ê°€ ì¶©ëŒí•œ ìœ„ì¹˜ ì €ì¥
             hitPosition = hit.point;
         }   
-        // Ãæµ¹ÇÏÁö ¾ÊÀº °æ¿ì
+        // ì¶©ëŒí•˜ì§€ ì•Šì€ ê²½ìš°
         else
         {
-            // Åº¾ËÀÌ ÃÖ´ë »çÁ¤°Å¸®±îÁö ³¯¾Æ°¬À» ¶§ÀÇ À§Ä¡¸¦ Ãæµ¹ À§Ä¡·Î »ç¿ë
+            // íƒ„ì•Œì´ ìµœëŒ€ ì‚¬ì •ê±°ë¦¬ê¹Œì§€ ë‚ ì•„ê°”ì„ ë•Œì˜ ìœ„ì¹˜ë¥¼ ì¶©ëŒ ìœ„ì¹˜ë¡œ ì‚¬ìš©
             hitPosition = fireTransform.position + fireTransform.forward * fireDistance;
         }
 
-        // ¹ß»ç ÀÌÆåÆ® Àç»ı ½ÃÀÛ
+        // ë°œì‚¬ ì´í™íŠ¸ ì¬ìƒ ì‹œì‘
         StartCoroutine(ShotEffect(hitPosition));
 
-        magAmmo--; // Åº¾Ë ¼ö -1
+        magAmmo--; // íƒ„ì•Œ ìˆ˜ -1
         if (magAmmo <= 0)
         {
-            state = State.Empty; // Åº¾Ë ¼ö°¡ ¾øÀ¸¸é ÃÑÀÇ »óÅÂ empty·Î °»½Å
+            state = State.Empty; // íƒ„ì•Œ ìˆ˜ê°€ ì—†ìœ¼ë©´ ì´ì˜ ìƒíƒœ emptyë¡œ ê°±ì‹ 
         }
     }
 
-    // ¹ß»ç ÀÌÆåÆ®¿Í ¼Ò¸®¸¦ Àç»ıÇÏ°í Åº¾Ë ±ËÀûÀ» ±×¸²
+    // ë°œì‚¬ ì´í™íŠ¸ì™€ ì†Œë¦¬ë¥¼ ì¬ìƒí•˜ê³  íƒ„ì•Œ ê¶¤ì ì„ ê·¸ë¦¼
     private IEnumerator ShotEffect(Vector3 hitPosition)
     {
-        // ÃÑ±¸ È­¿°, ÅºÇÇ ¹èÃâ È¿°ú Àç»ı
+        // ì´êµ¬ í™”ì—¼, íƒ„í”¼ ë°°ì¶œ íš¨ê³¼ ì¬ìƒ
         muzzleFlashEffect.Play();
         shellEjectEffect.Play();
 
-        // ÃÑ°İ ¼Ò¸® Àç»ı
+        // ì´ê²© ì†Œë¦¬ ì¬ìƒ
         gunAudioPlayer.PlayOneShot(gunData.shotClip);
 
-        // ¼± ½ÃÀÛÁ¡-ÃÑ±¸ À§Ä¡, ¼± ³¡Á¡-Ãæµ¹À§Ä¡
+        // ì„  ì‹œì‘ì -ì´êµ¬ ìœ„ì¹˜, ì„  ëì -ì¶©ëŒìœ„ì¹˜
         bulletLineRenderer.SetPosition(0, fireTransform.position);
         bulletLineRenderer.SetPosition(1, hitPosition);
-        // ¶óÀÎ·»´õ·¯¸¦ È°¼ºÈ­ ÇÏ¿© Åº¾Ë ±ËÀû±×¸²
+        // ë¼ì¸ë Œë”ëŸ¬ë¥¼ í™œì„±í™” í•˜ì—¬ íƒ„ì•Œ ê¶¤ì ê·¸ë¦¼
         bulletLineRenderer.enabled = true;
 
-        // ´ë±âÃ³¸® - ÄÚ·çÆ¾
+        // ëŒ€ê¸°ì²˜ë¦¬ - ì½”ë£¨í‹´
         yield return new WaitForSeconds(0.03f);
 
-        // ¶óÀÎ·»´õ·¯ ºñÈ°¼ºÈ­
+        // ë¼ì¸ë Œë”ëŸ¬ ë¹„í™œì„±í™”
         bulletLineRenderer.enabled = false;
     }
 
@@ -138,41 +138,41 @@ public class Gun : MonoBehaviour
     {
         if (state == State.Reloading || ammoRemain <= 0 || magAmmo >= gunData.magCapacity)
         {
-            // ÀÌ¹Ì ÀçÀåÀü(Reloading) »óÅÂÀÌ°Å³ª ³²Àº Åº¾ËÀÌ ¾ø°Å³ª
-            // ÅºÃ¢¿¡ Åº¾ËÀÌ ÀÌ¹Ì °¡µæÂù °æ¿ì false ¹İÈ¯
+            // ì´ë¯¸ ì¬ì¥ì „(Reloading) ìƒíƒœì´ê±°ë‚˜ ë‚¨ì€ íƒ„ì•Œì´ ì—†ê±°ë‚˜
+            // íƒ„ì°½ì— íƒ„ì•Œì´ ì´ë¯¸ ê°€ë“ì°¬ ê²½ìš° false ë°˜í™˜
             return false;
         }
 
-        // ÀçÀåÀü Ã³¸® ½ÃÀÛ
+        // ì¬ì¥ì „ ì²˜ë¦¬ ì‹œì‘
         StartCoroutine(ReloadRoutine());
         return true;
     }
 
 
-    // ½ÇÁ¦ ÀçÀåÀü Ã³¸®¸¦ ½ÇÇà
+    // ì‹¤ì œ ì¬ì¥ì „ ì²˜ë¦¬ë¥¼ ì‹¤í–‰
     private IEnumerator ReloadRoutine()
     {
-        state = State.Reloading; // ÇöÀç »óÅÂ reloadingÀ¸·Î º¯°æ
-        gunAudioPlayer.PlayOneShot(gunData.reloadClip); // ÀçÀåÀü ¼Ò¸® Àç»ı
+        state = State.Reloading; // í˜„ì¬ ìƒíƒœ reloadingìœ¼ë¡œ ë³€ê²½
+        gunAudioPlayer.PlayOneShot(gunData.reloadClip); // ì¬ì¥ì „ ì†Œë¦¬ ì¬ìƒ
 
         yield return new WaitForSeconds(gunData.reloadTime);
 
-        // ÅºÃ¢¿¡ Ã¤¿ï Åº¾Ë °è»ê
+        // íƒ„ì°½ì— ì±„ìš¸ íƒ„ì•Œ ê³„ì‚°
         int ammoToFill = gunData.magCapacity - magAmmo;
 
-        // ÅºÃ¢¿¡ Ã¤¿ö¾ßÇÒ Åº¾ËÀÌ ³²Àº Åº¾Ëº¸´Ù ¸¹À¸¸é
-        // Ã¤¿ö¾ß ÇÒ Åº¾Ë ¼ö¸¦ ³²Àº Åº¾Ë ¼ö¿¡ ¸ÂÃç¼­ ÁÙÀÓ
+        // íƒ„ì°½ì— ì±„ì›Œì•¼í•  íƒ„ì•Œì´ ë‚¨ì€ íƒ„ì•Œë³´ë‹¤ ë§ìœ¼ë©´
+        // ì±„ì›Œì•¼ í•  íƒ„ì•Œ ìˆ˜ë¥¼ ë‚¨ì€ íƒ„ì•Œ ìˆ˜ì— ë§ì¶°ì„œ ì¤„ì„
         if (ammoRemain < ammoToFill)
         {
             ammoToFill = ammoRemain;
         }
 
-        // ÅºÃ¢À» Ã¤¿ò
+        // íƒ„ì°½ì„ ì±„ì›€
         magAmmo += ammoToFill;
-        // ³²Àº Åº¾Ë¿¡¼­ ÅºÃ¢¿¡ Ã¤¿î¸¸Å­ Åº¾ËÀ» »­
+        // ë‚¨ì€ íƒ„ì•Œì—ì„œ íƒ„ì°½ì— ì±„ìš´ë§Œí¼ íƒ„ì•Œì„ ëºŒ
         ammoRemain -= ammoToFill;
 
-        state = State.Ready; // ÃÑÀÇ ÇöÀç »óÅÂ ready·Î º¯°æ
+        state = State.Ready; // ì´ì˜ í˜„ì¬ ìƒíƒœ readyë¡œ ë³€ê²½
     } 
 }
 
